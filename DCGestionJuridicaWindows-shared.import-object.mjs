@@ -601,6 +601,31 @@ const js_code = {
           new Uint8Array(wasmExports.memory.buffer).set(data, ptr);
     },
     'org.jetbrains.compose.resources.supportsCacheApi' : () => Boolean(window.caches),
+    'com.carvajalrivera.crgestionjuridicawindows.hablarJs' : (texto, alTerminar) => (() => {
+            if (!('speechSynthesis' in window)) return false;
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(texto);
+            u.lang = 'es-CO';
+            const voces = window.speechSynthesis.getVoices();
+            const voz = voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es-co')) || voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+            if (voz) u.voice = voz;
+            u.onend = () => alTerminar();
+            u.onerror = () => alTerminar();
+            window.speechSynthesis.speak(u);
+            return true;
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.callarJs' : () => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); },
+    'com.carvajalrivera.crgestionjuridicawindows.dictarJs' : (alTexto) => (() => {
+            const R = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!R) return false;
+            const r = new R();
+            r.lang = 'es-CO';
+            r.interimResults = false;
+            r.maxAlternatives = 1;
+            r.onresult = (e) => { const t = Array.from(e.results).map(x => x[0].transcript).join(' '); if (t) alTexto(t); };
+            try { r.start(); } catch (e) { return false; }
+            return true;
+        })(),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.xhrSincrono' : (metodo, url, encabezados, cuerpo) => (() => {
             const x = new XMLHttpRequest();
             x.open(metodo, url, false);
@@ -617,6 +642,153 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.hashPagina' : () => globalThis.location ? globalThis.location.hash : '',
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.limpiarHashPagina' : () => { if (globalThis.history && globalThis.location) globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search); },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.decodificarComponente' : (texto) => decodeURIComponent(texto.replace(/\+/g, ' ')),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.elegirArchivoJs' : (aceptar, alElegir) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            if (aceptar) input.accept = aceptar;
+            input.style.display = 'none';
+            input.addEventListener('change', () => {
+                const f = input.files && input.files[0];
+                input.remove();
+                if (!f) return;
+                const lector = new FileReader();
+                lector.onload = () => {
+                    const url = String(lector.result || '');
+                    alElegir(f.name, f.type || '', url.substring(url.indexOf(',') + 1));
+                };
+                lector.readAsDataURL(f);
+            });
+            document.body.appendChild(input);
+            input.click();
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.__convertKotlinClosureToJsClosure_3' : (f, trampoline) => getCachedJsObject(f, (p0, p1, p2) => trampoline(f, p0, p1, p2)),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.blobUrlJs' : (mime, base64) => (() => {
+            const bin = atob(base64);
+            const arr = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            return URL.createObjectURL(new Blob([arr], { type: mime }));
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.descargarUrlJs' : (url, nombre) => {
+            const a = document.createElement('a');
+            a.href = url;
+            if (nombre) a.download = nombre;
+            a.rel = 'noopener';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.abrirUrlJs' : (url) => (() => { window.open(url, '_blank'); return true; })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.imprimirUrlJs' : (url) => {
+            const f = document.createElement('iframe');
+            f.style.position = 'fixed'; f.style.right = '0'; f.style.bottom = '0';
+            f.style.width = '0'; f.style.height = '0'; f.style.border = '0';
+            f.src = url;
+            f.onload = () => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { window.open(url, '_blank'); } };
+            document.body.appendChild(f);
+            setTimeout(() => f.remove(), 600000);
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.copiarTextoJs' : (texto) => {
+            try { navigator.clipboard.writeText(texto); } catch (e) {
+                const t = document.createElement('textarea'); t.value = texto; document.body.appendChild(t);
+                t.select(); try { document.execCommand('copy'); } catch (e2) {} t.remove();
+            }
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.copiarImagenJs' : (base64) => (() => {
+            try {
+                const bin = atob(base64);
+                const arr = new Uint8Array(bin.length);
+                for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+                navigator.clipboard.write([new ClipboardItem({ 'image/png': new Blob([arr], { type: 'image/png' }) })]);
+                return true;
+            } catch (e) { return false; }
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.obtenerBinarioJs' : (url, encabezados) => (() => {
+            const x = new XMLHttpRequest();
+            x.open('GET', url, false);
+            x.overrideMimeType('text/plain; charset=x-user-defined');
+            const h = JSON.parse(encabezados);
+            for (const k in h) x.setRequestHeader(k, h[k]);
+            try { x.send(null); } catch (e) { return "0\n"; }
+            const t = x.responseText || '';
+            if (x.status < 200 || x.status > 299) return x.status + "\n" + btoa(unescape(encodeURIComponent(t)));
+            let bin = '';
+            const paso = 8192;
+            for (let i = 0; i < t.length; i += paso) {
+                const trozo = t.substring(i, i + paso);
+                let s = '';
+                for (let j = 0; j < trozo.length; j++) s += String.fromCharCode(trozo.charCodeAt(j) & 0xff);
+                bin += s;
+            }
+            return x.status + "\n" + btoa(bin);
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.enviarBinarioJs' : (metodo, url, encabezados, base64) => (() => {
+            const bin = atob(base64);
+            const arr = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+            const x = new XMLHttpRequest();
+            x.open(metodo, url, false);
+            const h = JSON.parse(encabezados);
+            for (const k in h) x.setRequestHeader(k, h[k]);
+            try { x.send(arr); } catch (e) { return "0\n"; }
+            return x.status + "\n" + (x.responseText || '');
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.registrarFuenteJs' : (familia, url, peso) => {
+            try {
+                fetch(url).then(r => r.arrayBuffer()).then(b => new FontFace(familia, b, { weight: peso }).load())
+                    .then(f => document.fonts.add(f)).catch(() => {});
+            } catch (e) {}
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoCrearJs' : (w, h) => (() => {
+            const L = (window.__dcLienzos = window.__dcLienzos || []);
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
+            L.push(c); return L.length - 1;
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoEscalarJs' : (id, s) => { window.__dcLienzos[id].getContext('2d').scale(s, s); },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoRectJs' : (id, x, y, w, h, color, relleno, grosor) => {
+            const g = window.__dcLienzos[id].getContext('2d');
+            if (relleno) { g.fillStyle = color; g.fillRect(x, y, w, h); }
+            else { g.strokeStyle = color; g.lineWidth = grosor; g.strokeRect(x, y, w, h); }
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoLineaJs' : (id, x1, y1, x2, y2, color, grosor) => {
+            const g = window.__dcLienzos[id].getContext('2d');
+            g.strokeStyle = color; g.lineWidth = grosor; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoTextoJs' : (id, t, x, y, fuente, color) => {
+            const g = window.__dcLienzos[id].getContext('2d');
+            g.font = fuente; g.fillStyle = color; g.textBaseline = 'alphabetic'; g.fillText(t, x, y);
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.medirTextoJs' : (t, fuente) => (() => {
+            const c = (window.__dcMedidor = window.__dcMedidor || document.createElement('canvas').getContext('2d'));
+            c.font = fuente; return c.measureText(t).width;
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.metricaJs' : (fuente, subida) => (() => {
+            const c = (window.__dcMedidor = window.__dcMedidor || document.createElement('canvas').getContext('2d'));
+            c.font = fuente; const m = c.measureText('Hg');
+            const tam = parseFloat(fuente.split(' ')[1]) || 12;
+            if (subida) return m.fontBoundingBoxAscent || tam * 0.93;
+            return m.fontBoundingBoxDescent || tam * 0.24;
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.imagenDePixelesJs' : (w, h, base64) => (() => {
+            const bin = atob(base64);
+            const datos = new ImageData(w, h);
+            for (let i = 0; i < bin.length; i++) datos.data[i] = bin.charCodeAt(i);
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            c.getContext('2d').putImageData(datos, 0, 0);
+            const L = (window.__dcLienzos = window.__dcLienzos || []);
+            L.push(c); return L.length - 1;
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoImagenJs' : (id, imagen, x, y, w, h) => {
+            const g = window.__dcLienzos[id].getContext('2d');
+            g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+            g.drawImage(window.__dcLienzos[imagen], x, y, w, h);
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoExportarJs' : (id, tipo) => (() => {
+            const u = window.__dcLienzos[id].toDataURL(tipo, 0.9);
+            return u.substring(u.indexOf(',') + 1);
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoLiberarJs' : (id) => { const c = window.__dcLienzos[id]; if (c) { c.width = 0; c.height = 0; window.__dcLienzos[id] = null; } },
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.normalizarJs' : (texto) => texto.normalize('NFD'),
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.hostJs' : (u) => new URL(u).hostname,
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.esquemaJs' : (u) => new URL(u).protocol.replace(':', ''),
