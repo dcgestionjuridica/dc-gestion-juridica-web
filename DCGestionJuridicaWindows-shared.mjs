@@ -1,6 +1,6 @@
 
 
-import { importObject, setWasmExports } from './DCGestionJuridicaWindows-shared.import-object.mjs?v=202610161955'
+import { importObject, setWasmExports } from './DCGestionJuridicaWindows-shared.import-object.mjs?v=202610162001'
 
 let wasmInstance;
 
@@ -30,7 +30,7 @@ try {
     const wasmModule = new WebAssembly.Module(wasmBuffer, wasmOptions);
     wasmInstance = new WebAssembly.Instance(wasmModule, importObject);
   } else {
-    wasmInstance = (await WebAssembly.instantiateStreaming(fetch(new URL('./DCGestionJuridicaWindows-shared.wasm?v=202610161955',import.meta.url).href), importObject, wasmOptions)).instance;
+    wasmInstance = (await WebAssembly.instantiateStreaming(fetch(new URL('./DCGestionJuridicaWindows-shared.wasm?v=202610162001',import.meta.url).href), importObject, wasmOptions)).instance;
   }
 } catch (e) {
   if (e instanceof WebAssembly.CompileError) {
