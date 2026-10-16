@@ -611,6 +611,12 @@ const js_code = {
         })(),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.codificarComponente' : (texto) => encodeURIComponent(texto),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.configuracionPagina' : (clave) => (globalThis.DC_CONFIG && typeof globalThis.DC_CONFIG[clave] === 'string') ? globalThis.DC_CONFIG[clave] : null,
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.fetchPost' : (url, encabezados, cuerpo) => fetch(url, { method: 'POST', headers: JSON.parse(encabezados), body: cuerpo })
+            .then(r => r.text().then(t => r.status + "\n" + t))
+            .catch(e => "0\n"),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.hashPagina' : () => globalThis.location ? globalThis.location.hash : '',
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.limpiarHashPagina' : () => { if (globalThis.history && globalThis.location) globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search); },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.decodificarComponente' : (texto) => decodeURIComponent(texto.replace(/\+/g, ' ')),
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.normalizarJs' : (texto) => texto.normalize('NFD'),
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.hostJs' : (u) => new URL(u).hostname,
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.esquemaJs' : (u) => new URL(u).protocol.replace(':', ''),
