@@ -751,6 +751,11 @@ const js_code = {
             if (relleno) { g.fillStyle = color; g.fillRect(x, y, w, h); }
             else { g.strokeStyle = color; g.lineWidth = grosor; g.strokeRect(x, y, w, h); }
         },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoPastillaJs' : (id, x1, x2, y, grosor, color) => {
+            const g = window.__dcLienzos[id].getContext('2d');
+            g.save(); g.strokeStyle = color; g.lineWidth = grosor; g.lineCap = 'round';
+            g.beginPath(); g.moveTo(x1 + grosor / 2, y); g.lineTo(x2 - grosor / 2, y); g.stroke(); g.restore();
+        },
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoLineaJs' : (id, x1, y1, x2, y2, color, grosor) => {
             const g = window.__dcLienzos[id].getContext('2d');
             g.strokeStyle = color; g.lineWidth = grosor; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
