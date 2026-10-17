@@ -1,6 +1,6 @@
 
 
-import { importObject, setWasmExports } from './DCGestionJuridicaWindows-shared.import-object.mjs?v=202610170455'
+import { importObject, setWasmExports } from './DCGestionJuridicaWindows-shared.import-object.mjs?v=202610171318'
 
 let wasmInstance;
 
@@ -10,13 +10,13 @@ try {
   if ((typeof process !== 'undefined') && (process.release.name === 'node')) {
     const fs = await import(/* webpackIgnore: true */'node:fs');
     const url = await import(/* webpackIgnore: true */'node:url');
-    const filepath = import.meta.resolve('./DCGestionJuridicaWindows-shared.wasm?v=202610170455');
+    const filepath = import.meta.resolve('./DCGestionJuridicaWindows-shared.wasm?v=202610171318');
     const wasmBuffer = fs.readFileSync(url.fileURLToPath(filepath));
     const wasmModule = new WebAssembly.Module(wasmBuffer, wasmOptions);
     wasmInstance = new WebAssembly.Instance(wasmModule, importObject);
   } else if (typeof Deno !== 'undefined') {
     const path = await import(/* webpackIgnore: true */'https://deno.land/std/path/mod.ts');
-    const binary = Deno.readFileSync(path.fromFileUrl(import.meta.resolve('./DCGestionJuridicaWindows-shared.wasm?v=202610170455')));
+    const binary = Deno.readFileSync(path.fromFileUrl(import.meta.resolve('./DCGestionJuridicaWindows-shared.wasm?v=202610171318')));
     const module = await WebAssembly.compile(binary, wasmOptions);
     wasmInstance = await WebAssembly.instantiate(module, importObject);
   } else if (
@@ -30,7 +30,7 @@ try {
     const wasmModule = new WebAssembly.Module(wasmBuffer, wasmOptions);
     wasmInstance = new WebAssembly.Instance(wasmModule, importObject);
   } else {
-    wasmInstance = (await WebAssembly.instantiateStreaming(fetch(new URL('./DCGestionJuridicaWindows-shared.wasm?v=202610170455',import.meta.url).href), importObject, wasmOptions)).instance;
+    wasmInstance = (await WebAssembly.instantiateStreaming(fetch(new URL('./DCGestionJuridicaWindows-shared.wasm?v=202610171318',import.meta.url).href), importObject, wasmOptions)).instance;
   }
 } catch (e) {
   if (e instanceof WebAssembly.CompileError) {
