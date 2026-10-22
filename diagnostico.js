@@ -47,8 +47,7 @@
       const ms = Math.round(performance.now() - inicio);
       pedidos.push({ metodo, ruta: ruta(url), ms, estado, hora: new Date().toISOString().slice(11, 19) });
       if (pedidos.length > 20) pedidos.shift();
-      if (ms >= 2500) D.registrar("ESPERA_LARGA", "La pantalla esperó " + (ms / 1000).toFixed(1) + " s una respuesta del servidor (" + ruta(url) + ").", { ruta: ruta(url), metodo, milisegundos: ms, estado });
-      if (estado === 0) D.registrar("SIN_CONEXION", "No se pudo llegar al servidor (" + ruta(url) + ").", { ruta: ruta(url), metodo });
+      // V1.3.399: solo lo grave (pedido de Darío); la espera queda en el congelamiento que causa (pedidosRecientes).
     },
 
     /** Lo llama la aplicación cada segundo: si deja de llegar, la pantalla está congelada. */
@@ -72,11 +71,11 @@
   addEventListener("pagehide", () => poner(CIERRE, "1"));
   addEventListener("pageshow", () => quitar(CIERRE));
 
-  // Congelamientos: tareas que ocuparon la pantalla más de 1,5 s (Chrome y Edge).
+  // Congelamientos: tareas que ocuparon la pantalla 5 s o más (Chrome y Edge).
   try {
     new PerformanceObserver((lista) => {
       for (const t of lista.getEntries()) {
-        if (t.duration >= 1500) D.registrar("CONGELAMIENTO", "La pantalla se quedó quieta " + (t.duration / 1000).toFixed(1) + " s en «" + D.pantalla + "».", { milisegundos: Math.round(t.duration) });
+        if (t.duration >= 5000) D.registrar("CONGELAMIENTO", "La pantalla se quedó quieta " + (t.duration / 1000).toFixed(1) + " s en «" + D.pantalla + "».", { milisegundos: Math.round(t.duration) });
       }
     }).observe({ type: "longtask", buffered: true });
   } catch (e) {}
