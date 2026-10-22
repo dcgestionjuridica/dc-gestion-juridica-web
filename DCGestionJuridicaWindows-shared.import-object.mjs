@@ -602,6 +602,16 @@ const js_code = {
           new Uint8Array(wasmExports.memory.buffer).set(data, ptr);
     },
     'org.jetbrains.compose.resources.supportsCacheApi' : () => Boolean(window.caches),
+    'com.carvajalrivera.crgestionjuridicawindows.estadoJs' : () => globalThis.DC_PUSH ? globalThis.DC_PUSH.estado() : 'no',
+    'com.carvajalrivera.crgestionjuridicawindows.activarJs' : (clave) => { if (globalThis.DC_PUSH) globalThis.DC_PUSH.activar(clave, 'sw.js'); },
+    'com.carvajalrivera.crgestionjuridicawindows.desactivarJs' : () => { if (globalThis.DC_PUSH) globalThis.DC_PUSH.desactivar(); },
+    'com.carvajalrivera.crgestionjuridicawindows.resultadoJs' : () => globalThis.DC_PUSH ? String(globalThis.DC_PUSH.resultado || '') : '',
+    'com.carvajalrivera.crgestionjuridicawindows.errorJs' : () => globalThis.DC_PUSH ? String(globalThis.DC_PUSH.error || '') : 'Falta avisos-push.js',
+    'com.carvajalrivera.crgestionjuridicawindows.leerJs' : (base64, mime) => { if (globalThis.DC_OCR) globalThis.DC_OCR.leer(base64, mime); },
+    'com.carvajalrivera.crgestionjuridicawindows.resultadoJs_1' : () => globalThis.DC_OCR ? String(globalThis.DC_OCR.resultado || '') : '',
+    'com.carvajalrivera.crgestionjuridicawindows.errorJs_1' : () => globalThis.DC_OCR ? String(globalThis.DC_OCR.error || '') : 'Falta comprobante.js',
+    'com.carvajalrivera.crgestionjuridicawindows.recibidaJs' : () => (() => { const o = globalThis.DC_OCR; if (!o || !o.recibida) return ''; const r = o.recibida; o.recibida = null; return JSON.stringify(r); })(),
+    'com.carvajalrivera.crgestionjuridicawindows.escucharJs' : (activo) => { if (globalThis.DC_OCR) globalThis.DC_OCR.escuchar(activo); },
     'com.carvajalrivera.crgestionjuridicawindows.hablarJs' : (texto, alTerminar) => (() => {
             if (!('speechSynthesis' in window)) return false;
             window.speechSynthesis.cancel();
@@ -643,6 +653,12 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.hashPagina' : () => globalThis.location ? globalThis.location.hash : '',
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.limpiarHashPagina' : () => { if (globalThis.history && globalThis.location) globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search); },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.decodificarComponente' : (texto) => decodeURIComponent(texto.replace(/\+/g, ' ')),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.agenteNavegadorJs' : () => navigator.userAgent,
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.fetchGet' : (url, encabezados) => fetch(url, { headers: JSON.parse(encabezados) })
+            .then(r => r.text().then(t => r.status + "\n" + t))
+            .catch(e => "0\n"),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.leerRutasJs' : (clave) => { try { return window.localStorage.getItem(clave); } catch (e) { return null; } },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.guardarRutasJs' : (clave, valor) => { try { window.localStorage.setItem(clave, valor); } catch (e) {} },
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.elegirArchivoJs' : (aceptar, alElegir) => {
             const input = document.createElement('input');
             input.type = 'file';
@@ -803,6 +819,8 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.decodificarJs' : (t) => decodeURIComponent(t.replace(/\+/g, ' ')),
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.leerLocalJs' : (clave) => { try { return window.localStorage.getItem(clave); } catch (e) { return null; } },
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.guardarLocalJs' : (clave, valor) => { try { window.localStorage.setItem(clave, valor); } catch (e) {} },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.ponerTituloJs' : (t) => { document.title = t; },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.ponerRutaJs' : (r) => { if (globalThis.history && globalThis.location && globalThis.location.hash !== r) globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search + r); },
     'com.carvajalrivera.crgestionjuridicawindows.tiempo.milisJs' : () => Date.now(),
     'com.carvajalrivera.crgestionjuridicawindows.tiempo.desfaseMinutosJs' : (milis) => new Date(milis).getTimezoneOffset()
 }
