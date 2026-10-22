@@ -1,6 +1,6 @@
 
-import * as Li9za2lrby5tanM from './skiko.mjs';
-import * as QGpzLWpvZGEvY29yZQ from './js-joda.esm.js';
+import * as Li9za2lrby5tanM from './skiko.mjs?v=c1120';
+import * as QGpzLWpvZGEvY29yZQ from './js-joda.esm.js?v=j1';
 import * as d2FzbTpqcy1zdHJpbmc from './DCGestionJuridicaWindows-shared.js-builtins.mjs';
 
 const wasmJsTag = WebAssembly.JSTag;
@@ -260,6 +260,7 @@ const js_code = {
     'org.w3c.dom.ShadowRootInit' : (mode) => ({ mode: mode }),
     'org.w3c.dom.AddEventListenerOptions_js_code' : (passive, once, capture) => ({ passive: passive, once: once, capture: capture }),
     'org.w3c.dom.location_$external_prop_getter' : (_this) => _this.location,
+    'org.w3c.dom.history_$external_prop_getter' : (_this) => _this.history,
     'org.w3c.dom.navigator_$external_prop_getter' : (_this) => _this.navigator,
     'org.w3c.dom.devicePixelRatio_$external_prop_getter' : (_this) => _this.devicePixelRatio,
     'org.w3c.dom.open_$external_fun' : (_this, p0, p1, p2, isDefault0, isDefault1, isDefault2) => _this.open(isDefault0 ? undefined : p0, isDefault1 ? undefined : p1, isDefault2 ? undefined : p2, ),
@@ -271,6 +272,8 @@ const js_code = {
     'org.w3c.dom.MediaQueryList_$external_class_instanceof' : (x) => x instanceof MediaQueryList,
     'org.w3c.dom.MediaQueryList_$external_class_get' : () => MediaQueryList,
     'org.w3c.dom.protocol_$external_prop_getter' : (_this) => _this.protocol,
+    'org.w3c.dom.pathname_$external_prop_getter' : (_this) => _this.pathname,
+    'org.w3c.dom.search_$external_prop_getter' : (_this) => _this.search,
     'org.w3c.dom.tabIndex_$external_prop_setter' : (_this, v) => _this.tabIndex = v,
     'org.w3c.dom.innerText_$external_prop_setter' : (_this, v) => _this.innerText = v,
     'org.w3c.dom.click_$external_fun' : (_this, ) => _this.click(),
@@ -331,6 +334,7 @@ const js_code = {
     'org.w3c.dom.language_$external_prop_getter' : (_this) => _this.language,
     'org.w3c.dom.caches_$external_prop_getter' : (_this) => _this.caches,
     'org.w3c.dom.fetch_$external_fun' : (_this, p0, p1, isDefault0) => _this.fetch(p0, isDefault0 ? undefined : p1, ),
+    'org.w3c.dom.replaceState_$external_fun' : (_this, p0, p1, p2, isDefault0) => _this.replaceState(p0, p1, isDefault0 ? undefined : p2, ),
     'org.w3c.dom.item_$external_fun' : (_this, p0) => _this.item(p0),
     'org.w3c.dom.top_$external_prop_getter' : (_this) => _this.top,
     'org.w3c.dom.left_$external_prop_getter' : (_this) => _this.left,
@@ -340,6 +344,8 @@ const js_code = {
     'org.w3c.dom.parsing.parseFromString_$external_fun' : (_this, p0, p1) => _this.parseFromString(p0, p1),
     'org.w3c.dom.pointerevents.pointerId_$external_prop_getter' : (_this) => _this.pointerId,
     'org.w3c.dom.pointerevents.pressure_$external_prop_getter' : (_this) => _this.pressure,
+    'org.w3c.dom.url.URLSearchParams_$external_fun' : (p0, isDefault0) => new URLSearchParams(isDefault0 ? undefined : p0, ),
+    'org.w3c.dom.url.get_$external_fun' : (_this, p0) => _this.get(p0),
     'org.w3c.fetch.ok_$external_prop_getter' : (_this) => _this.ok,
     'org.w3c.fetch.clone_$external_fun' : (_this, ) => _this.clone(),
     'org.w3c.fetch.arrayBuffer_$external_fun' : (_this, ) => _this.arrayBuffer(),
@@ -637,12 +643,20 @@ const js_code = {
             try { r.start(); } catch (e) { return false; }
             return true;
         })(),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.navegadorEnLinea' : () => navigator.onLine !== false,
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.registrarJs' : (tipo, mensaje, detalle) => { try { if (globalThis.DC_DIAG) globalThis.DC_DIAG.registrar(tipo, mensaje, JSON.parse(detalle)); } catch (e) {} },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.ponerVersionJs' : (v) => { if (globalThis.DC_DIAG) globalThis.DC_DIAG.version = v; },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.latidoJs' : (pantalla) => { if (globalThis.DC_DIAG) { globalThis.DC_DIAG.pantalla = pantalla; globalThis.DC_DIAG.latido(); } },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.tomarJs' : () => globalThis.DC_DIAG ? globalThis.DC_DIAG.tomar() : '[]',
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.devolverJs' : (texto) => { if (globalThis.DC_DIAG) globalThis.DC_DIAG.devolver(texto); },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.xhrSincrono' : (metodo, url, encabezados, cuerpo) => (() => {
             const x = new XMLHttpRequest();
             x.open(metodo, url, false);
             const h = JSON.parse(encabezados);
             for (const k in h) x.setRequestHeader(k, h[k]);
-            try { x.send(cuerpo); } catch (e) { return "0\n"; }
+            const D = globalThis.DC_DIAG, t0 = D ? D.empieza(metodo, url) : 0;
+            try { x.send(cuerpo); } catch (e) { if (D) D.termina(metodo, url, t0, 0); return "0\n"; }
+            if (D) D.termina(metodo, url, t0, x.status);
             return x.status + "\n" + (x.responseText || "");
         })(),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.codificarComponente' : (texto) => encodeURIComponent(texto),
@@ -655,6 +669,9 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.decodificarComponente' : (texto) => decodeURIComponent(texto.replace(/\+/g, ' ')),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.agenteNavegadorJs' : () => navigator.userAgent,
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.fetchGet' : (url, encabezados) => fetch(url, { headers: JSON.parse(encabezados) })
+            .then(r => r.text().then(t => r.status + "\n" + t))
+            .catch(e => "0\n"),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.fetchPostJs' : (url, encabezados, cuerpo) => fetch(url, { method: 'POST', headers: JSON.parse(encabezados), body: cuerpo })
             .then(r => r.text().then(t => r.status + "\n" + t))
             .catch(e => "0\n"),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.leerRutasJs' : (clave) => { try { return window.localStorage.getItem(clave); } catch (e) { return null; } },
@@ -726,7 +743,9 @@ const js_code = {
             x.overrideMimeType('text/plain; charset=x-user-defined');
             const h = JSON.parse(encabezados);
             for (const k in h) x.setRequestHeader(k, h[k]);
-            try { x.send(null); } catch (e) { return "0\n"; }
+            const D = globalThis.DC_DIAG, t0 = D ? D.empieza('GET', url) : 0;
+            try { x.send(null); } catch (e) { if (D) D.termina('GET', url, t0, 0); return "0\n"; }
+            if (D) D.termina('GET', url, t0, x.status);
             const t = x.responseText || '';
             if (x.status < 200 || x.status > 299) return x.status + "\n" + btoa(unescape(encodeURIComponent(t)));
             let bin = '';
@@ -747,7 +766,9 @@ const js_code = {
             x.open(metodo, url, false);
             const h = JSON.parse(encabezados);
             for (const k in h) x.setRequestHeader(k, h[k]);
-            try { x.send(arr); } catch (e) { return "0\n"; }
+            const D = globalThis.DC_DIAG, t0 = D ? D.empieza(metodo, url) : 0;
+            try { x.send(arr); } catch (e) { if (D) D.termina(metodo, url, t0, 0); return "0\n"; }
+            if (D) D.termina(metodo, url, t0, x.status);
             return x.status + "\n" + (x.responseText || '');
         })(),
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.registrarFuenteJs' : (familia, url, peso) => {

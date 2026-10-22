@@ -22,8 +22,13 @@ html,body{margin:0;height:100%;overflow:hidden;background:#0B1F3A}
 // Dirección y clave PÚBLICA del proyecto Supabase (la misma de la web del celular). Nunca una clave secreta.
 window.DC_CONFIG = { url: "https://bopiajeyzystoaumishw.supabase.co", clavePublica: "sb_publishable_ggggVf0N814HmKzfk0sQpw_srEZ1ZWg" };
 </script>
-<script src="avisos-push.js?v=202610221640"></script>
-<script src="comprobante.js?v=202610221640"></script>
-<script type="module" src="DCGestionJuridicaWindows-shared.mjs?v=202610221640"></script>
+<script>
+// V1.3.397: los archivos de la aplicación se guardan en el navegador para abrir al instante (sw.js).
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+<script src="diagnostico.js?v=202610221840"></script>
+<script src="avisos-push.js?v=202610221840"></script>
+<script src="comprobante.js?v=202610221840"></script>
+<script type="module" src="DCGestionJuridicaWindows-shared.mjs?v=202610221840"></script>
 </body>
 </html>
