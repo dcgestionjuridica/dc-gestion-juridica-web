@@ -618,6 +618,7 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.errorJs_1' : () => globalThis.DC_OCR ? String(globalThis.DC_OCR.error || '') : 'Falta comprobante.js',
     'com.carvajalrivera.crgestionjuridicawindows.recibidaJs' : () => (() => { const o = globalThis.DC_OCR; if (!o || !o.recibida) return ''; const r = o.recibida; o.recibida = null; return JSON.stringify(r); })(),
     'com.carvajalrivera.crgestionjuridicawindows.escucharJs' : (activo) => { if (globalThis.DC_OCR) globalThis.DC_OCR.escuchar(activo); },
+    'com.carvajalrivera.crgestionjuridicawindows.clicJs' : (volumen) => { if (globalThis.DC_CLIC) globalThis.DC_CLIC(volumen); },
     'com.carvajalrivera.crgestionjuridicawindows.hablarJs' : (texto, alTerminar) => (() => {
             if (!('speechSynthesis' in window)) return false;
             window.speechSynthesis.cancel();
