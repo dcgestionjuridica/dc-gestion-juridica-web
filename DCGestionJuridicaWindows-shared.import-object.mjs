@@ -1,6 +1,6 @@
 
-import * as Li9za2lrby5tanM from './skiko.mjs?v=c1120';
-import * as QGpzLWpvZGEvY29yZQ from './js-joda.esm.js?v=j1';
+import * as Li9za2lrby5tanM from './skiko.mjs';
+import * as QGpzLWpvZGEvY29yZQ from './js-joda.esm.js';
 import * as d2FzbTpqcy1zdHJpbmc from './DCGestionJuridicaWindows-shared.js-builtins.mjs';
 
 const wasmJsTag = WebAssembly.JSTag;
