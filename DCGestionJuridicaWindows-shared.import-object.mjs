@@ -844,8 +844,7 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.guardarLocalJs' : (clave, valor) => { try { window.localStorage.setItem(clave, valor); } catch (e) {} },
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.ponerTituloJs' : (t) => { document.title = t; },
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.ponerRutaJs' : (r) => { if (globalThis.history && globalThis.location && globalThis.location.hash !== r) globalThis.history.replaceState(null, '', globalThis.location.pathname + globalThis.location.search + r); },
-    'com.carvajalrivera.crgestionjuridicawindows.tiempo.milisJs' : () => Date.now(),
-    'com.carvajalrivera.crgestionjuridicawindows.tiempo.desfaseMinutosJs' : (milis) => new Date(milis).getTimezoneOffset()
+    'com.carvajalrivera.crgestionjuridicawindows.tiempo.milisJs' : () => Date.now()
 }
 
 const StringConstantsProxy = new Proxy({}, {
