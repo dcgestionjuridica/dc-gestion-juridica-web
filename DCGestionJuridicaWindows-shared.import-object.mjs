@@ -644,6 +644,8 @@ const js_code = {
             return true;
         })(),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.navegadorEnLinea' : () => navigator.onLine !== false,
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.leerPestanaJs' : (clave) => { try { return window.sessionStorage.getItem(clave); } catch (e) { return null; } },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.guardarPestanaJs' : (clave, valor) => { try { if (valor) window.sessionStorage.setItem(clave, valor); else window.sessionStorage.removeItem(clave); } catch (e) {} },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.registrarJs' : (tipo, mensaje, detalle) => { try { if (globalThis.DC_DIAG) globalThis.DC_DIAG.registrar(tipo, mensaje, JSON.parse(detalle)); } catch (e) {} },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.ponerVersionJs' : (v) => { if (globalThis.DC_DIAG) globalThis.DC_DIAG.version = v; },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.latidoJs' : (pantalla) => { if (globalThis.DC_DIAG) { globalThis.DC_DIAG.pantalla = pantalla; globalThis.DC_DIAG.latido(); } },
