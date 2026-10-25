@@ -262,7 +262,6 @@ const js_code = {
     'org.w3c.dom.location_$external_prop_getter' : (_this) => _this.location,
     'org.w3c.dom.history_$external_prop_getter' : (_this) => _this.history,
     'org.w3c.dom.navigator_$external_prop_getter' : (_this) => _this.navigator,
-    'org.w3c.dom.innerWidth_$external_prop_getter' : (_this) => _this.innerWidth,
     'org.w3c.dom.devicePixelRatio_$external_prop_getter' : (_this) => _this.devicePixelRatio,
     'org.w3c.dom.open_$external_fun' : (_this, p0, p1, p2, isDefault0, isDefault1, isDefault2) => _this.open(isDefault0 ? undefined : p0, isDefault1 ? undefined : p1, isDefault2 ? undefined : p2, ),
     'org.w3c.dom.requestAnimationFrame_$external_fun' : (_this, p0) => _this.requestAnimationFrame(p0),
