@@ -620,17 +620,41 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.escucharJs' : (activo) => { if (globalThis.DC_OCR) globalThis.DC_OCR.escuchar(activo); },
     'com.carvajalrivera.crgestionjuridicawindows.hablarJs' : (texto, alTerminar) => (() => {
             if (!('speechSynthesis' in window)) return false;
-            window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(texto);
-            u.lang = 'es-CO';
-            const voces = window.speechSynthesis.getVoices();
-            const voz = voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es-co')) || voces.find(v => v.lang && v.lang.toLowerCase().startsWith('es'));
-            if (voz) u.voice = voz;
-            u.onend = () => alTerminar();
-            u.onerror = () => alTerminar();
-            window.speechSynthesis.speak(u);
+            const s = window.speechSynthesis;
+            s.cancel();
+            const voces = s.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+            const hombres = /(gonzalo|jorge|ra[uú]l|pablo|alvaro|álvaro|diego|juan|carlos|enrique|gerardo|andr[eé]s|emilio|tom[aá]s|lorenzo|federico|jos[eé]|mateo|alonso|liam|male)/i;
+            const orden = [
+              v => /salome/i.test(v.name) && /natural|online/i.test(v.name),
+              v => /(dalia|ximena|valentina|yolanda|elena|larissa|marta|beatriz|camila|tomasa|sofia|sof[ií]a|catalina|carlota|renata)/i.test(v.name) && /natural|online/i.test(v.name) && !/es-es/i.test(v.lang),
+              v => /natural|online/i.test(v.name) && !/es-es/i.test(v.lang) && !hombres.test(v.name),
+              v => /google/i.test(v.name) && /es-us|es-419|es-mx/i.test(v.lang),
+              v => /(salome|sabina|paulina|monica|m[oó]nica|soledad|angelica|ang[eé]lica|esperanza|isabela|luciana|francisca)/i.test(v.name),
+              v => !/es-es/i.test(v.lang) && !hombres.test(v.name),
+              v => !hombres.test(v.name)
+            ];
+            let voz = null;
+            for (const regla of orden) { voz = voces.find(v => regla(v) && !hombres.test(v.name)); if (voz) break; }
+            const partes = texto.match(/[^.!?¡¿\n]+[.!?]*|\n+/g) || [texto];
+            const trozos = [];
+            let actual = '';
+            for (const p of partes) { if ((actual + p).length > 220 && actual) { trozos.push(actual); actual = p; } else actual += p; }
+            if (actual.trim()) trozos.push(actual);
+            const lista = trozos.map(t => t.trim()).filter(t => t);
+            if (!lista.length) return false;
+            lista.forEach((t, i) => {
+              const u = new SpeechSynthesisUtterance(t);
+              u.lang = voz ? voz.lang : 'es-CO';
+              if (voz) u.voice = voz;
+              u.rate = 0.96;
+              u.pitch = 1.04;
+              if (i === lista.length - 1) { u.onend = () => alTerminar(); }
+              u.onerror = () => { s.cancel(); alTerminar(); };
+              s.speak(u);
+            });
             return true;
         })(),
+    'com.carvajalrivera.crgestionjuridicawindows.prepararVocesJs' : () => { if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices(); } },
     'com.carvajalrivera.crgestionjuridicawindows.callarJs' : () => { if ('speechSynthesis' in window) window.speechSynthesis.cancel(); },
     'com.carvajalrivera.crgestionjuridicawindows.dictarJs' : (alTexto) => (() => {
             const R = window.SpeechRecognition || window.webkitSpeechRecognition;
