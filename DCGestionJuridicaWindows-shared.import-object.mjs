@@ -53,6 +53,7 @@ const js_code = {
     'kotlin.createJsError' : (message, cause) => new Error(message, { cause }),
     'kotlin.wasm.internal.jsThrow' : wasmTag === wasmJsTag ? (e) => { throw e; } : () => {},
     'kotlin.wasm.internal.getJsEmptyString' : () => '',
+    'kotlin.wasm.internal.externrefToBoolean' : (ref) => Boolean(ref),
     'kotlin.wasm.internal.externrefToDouble' : (ref) => Number(ref),
     'kotlin.wasm.internal.externrefToInt' : (ref) => Number(ref),
     'kotlin.wasm.internal.intToExternref' : (x) => x,
@@ -670,6 +671,55 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.navegadorEnLinea' : () => navigator.onLine !== false,
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.leerPestanaJs' : (clave) => { try { return window.sessionStorage.getItem(clave); } catch (e) { return null; } },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.guardarPestanaJs' : (clave, valor) => { try { if (valor) window.sessionStorage.setItem(clave, valor); else window.sessionStorage.removeItem(clave); } catch (e) {} },
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.huellaDisponibleJs' : () => (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) ? PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(function () { return false; }) : Promise.resolve(false),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.huellaEntrarJs' : (url, clave) => (async function () {
+      var b64 = function (b) { return btoa(String.fromCharCode.apply(null, new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+      var deb = function (s) { return Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), function (c) { return c.charCodeAt(0); }); };
+      var llamar = async function (cuerpo) {
+        var r = await fetch(url + '/functions/v1/huella', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: clave }, body: JSON.stringify(cuerpo) });
+        var j = await r.json().catch(function () { return { error: 'Sin respuesta del servidor.' }; });
+        j.estado = r.status; return j;
+      };
+      try {
+        var op = await llamar({ accion: 'entrada_opciones' });
+        if (op.error) return JSON.stringify(op);
+        var cred = await navigator.credentials.get({ publicKey: { challenge: deb(op.challenge), rpId: op.rpId, timeout: op.timeout, userVerification: 'required', allowCredentials: [] } });
+        var r = cred.response;
+        var resp = { id: cred.id, rawId: b64(cred.rawId), type: cred.type, clientExtensionResults: {}, response: {
+          clientDataJSON: b64(r.clientDataJSON), authenticatorData: b64(r.authenticatorData), signature: b64(r.signature), userHandle: r.userHandle ? b64(r.userHandle) : undefined } };
+        return JSON.stringify(await llamar({ accion: 'entrada_verificar', respuesta: resp }));
+      } catch (e) {
+        return JSON.stringify({ error: e && (e.name === 'NotAllowedError' || e.name === 'AbortError') ? 'cancelado' : 'No se pudo usar la huella en este equipo. Entre con su contraseña.' });
+      }
+    })(),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.huellaActivarJs' : (url, clave, token) => (async function () {
+      var b64 = function (b) { return btoa(String.fromCharCode.apply(null, new Uint8Array(b))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+      var deb = function (s) { return Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), function (c) { return c.charCodeAt(0); }); };
+      var llamar = async function (cuerpo) {
+        var r = await fetch(url + '/functions/v1/huella', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: clave, Authorization: 'Bearer ' + token }, body: JSON.stringify(cuerpo) });
+        return await r.json().catch(function () { return { error: 'Sin respuesta del servidor.' }; });
+      };
+      try {
+        var op = await llamar({ accion: 'registro_opciones' });
+        if (op.error) return JSON.stringify(op);
+        var cred = await navigator.credentials.create({ publicKey: {
+          challenge: deb(op.challenge), rp: op.rp, user: { id: deb(op.user.id), name: op.user.name, displayName: op.user.displayName || op.user.name },
+          pubKeyCredParams: op.pubKeyCredParams, timeout: op.timeout, attestation: 'none', authenticatorSelection: op.authenticatorSelection,
+          excludeCredentials: (op.excludeCredentials || []).map(function (c) { return { id: deb(c.id), type: 'public-key', transports: c.transports }; }) } });
+        var r = cred.response;
+        var resp = { id: cred.id, rawId: b64(cred.rawId), type: cred.type, clientExtensionResults: {}, response: {
+          clientDataJSON: b64(r.clientDataJSON), attestationObject: b64(r.attestationObject), transports: r.getTransports ? r.getTransports() : [] } };
+        var ua = navigator.userAgent;
+        var equipo = /iPhone|iPad/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Celular Android' : /Windows/.test(ua) ? 'PC con Windows' : /Mac/.test(ua) ? 'Mac' : 'Otro equipo';
+        var v = await llamar({ accion: 'registro_verificar', respuesta: resp, equipo: equipo });
+        if (v.ok) v.credencial = cred.id;
+        return JSON.stringify(v);
+      } catch (e) {
+        if (e && e.name === 'InvalidStateError') return JSON.stringify({ ok: true, credencial: '1' });
+        return JSON.stringify({ error: e && (e.name === 'NotAllowedError' || e.name === 'AbortError') ? 'cancelado' : 'Este equipo no permitió activar la huella.' });
+      }
+    })(),
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.huellaQuitarJs' : (url, clave, token, credencial) => fetch(url + '/functions/v1/huella', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: clave, Authorization: 'Bearer ' + token }, body: JSON.stringify({ accion: 'quitar', credencial_id: credencial }) }).then(function (r) { return r.text(); }).catch(function () { return ''; }),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.registrarJs' : (tipo, mensaje, detalle) => { try { if (globalThis.DC_DIAG) globalThis.DC_DIAG.registrar(tipo, mensaje, JSON.parse(detalle)); } catch (e) {} },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.ponerVersionJs' : (v) => { if (globalThis.DC_DIAG) globalThis.DC_DIAG.version = v; },
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.latidoJs' : (pantalla) => { if (globalThis.DC_DIAG) { globalThis.DC_DIAG.pantalla = pantalla; globalThis.DC_DIAG.latido(); } },
