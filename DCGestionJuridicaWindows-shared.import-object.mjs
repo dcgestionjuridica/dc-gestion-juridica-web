@@ -608,6 +608,7 @@ const js_code = {
           new Uint8Array(wasmExports.memory.buffer).set(data, ptr);
     },
     'org.jetbrains.compose.resources.supportsCacheApi' : () => Boolean(window.caches),
+    'com.carvajalrivera.crgestionjuridicawindows.agenteNavegador' : () => navigator.userAgent || '',
     'com.carvajalrivera.crgestionjuridicawindows.estadoJs' : () => globalThis.DC_PUSH ? globalThis.DC_PUSH.estado() : 'no',
     'com.carvajalrivera.crgestionjuridicawindows.activarJs' : (clave) => { if (globalThis.DC_PUSH) globalThis.DC_PUSH.activar(clave, 'sw.js'); },
     'com.carvajalrivera.crgestionjuridicawindows.desactivarJs' : () => { if (globalThis.DC_PUSH) globalThis.DC_PUSH.desactivar(); },
