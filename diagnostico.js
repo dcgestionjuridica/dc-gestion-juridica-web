@@ -7,6 +7,12 @@
   const leer = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const poner = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
   const quitar = (k) => { try { localStorage.removeItem(k); } catch (e) {} };
+  // 29/10/2026: el latido, el cierre y la espera van en la memoria de ESTA pestaña (sessionStorage). Antes iban en la
+  // memoria compartida y, con dos ventanas abiertas (la app instalada y una pestaña de Chrome), la ventana nueva leía el
+  // latido de la otra, que seguía viva, y anotaba un «CIERRE_ANORMAL» falso. Al recargar (F5) la pestaña conserva esta memoria.
+  const leerP = (k) => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
+  const ponerP = (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} };
+  const quitarP = (k) => { try { sessionStorage.removeItem(k); } catch (e) {} };
   const pedidos = [];
 
   const D = (window.DC_DIAG = {
@@ -41,9 +47,9 @@
     },
 
     /** Pedido al servidor que deja la pantalla esperando: antes y después. */
-    empieza(metodo, url) { poner(ESPERA, JSON.stringify({ metodo, ruta: ruta(url), desde: new Date().toISOString(), pantalla: D.pantalla })); return performance.now(); },
+    empieza(metodo, url) { ponerP(ESPERA, JSON.stringify({ metodo, ruta: ruta(url), desde: new Date().toISOString(), pantalla: D.pantalla })); return performance.now(); },
     termina(metodo, url, inicio, estado) {
-      quitar(ESPERA);
+      quitarP(ESPERA);
       const ms = Math.round(performance.now() - inicio);
       pedidos.push({ metodo, ruta: ruta(url), ms, estado, hora: new Date().toISOString().slice(11, 19) });
       if (pedidos.length > 20) pedidos.shift();
@@ -51,25 +57,29 @@
     },
 
     /** Lo llama la aplicación cada segundo: si deja de llegar, la pantalla está congelada. */
-    latido() { poner(LATIDO, JSON.stringify({ t: Date.now(), pantalla: D.pantalla })); }
+    latido() { ponerP(LATIDO, JSON.stringify({ t: Date.now(), pantalla: D.pantalla })); }
   });
 
   // Solo la ruta (tabla o función), nunca los filtros: pueden llevar nombres o cédulas.
   function ruta(url) { try { return new URL(url, location.href).pathname.replace(/^\/(rest|functions)\/v1\//, ""); } catch (e) { return "?"; } }
 
   // ¿La vez pasada se cerró bien? Si no, pudo quedarse congelada o colgada.
-  const anterior = leer(LATIDO), cerro = leer(CIERRE), esperando = leer(ESPERA);
+  const anterior = leerP(LATIDO), cerro = leerP(CIERRE), esperando = leerP(ESPERA);
+  // Lo que quedó de versiones anteriores en la memoria compartida ya no sirve (y daba avisos falsos).
+  quitar(LATIDO); quitar(CIERRE); quitar(ESPERA);
+  let a = {}; try { a = JSON.parse(anterior || "{}"); } catch (x) {}
+  // Un latido de hace menos de 3 s es de una pestaña que sigue viva (p. ej. «Duplicar pestaña»), no de un cierre.
+  const reciente = a.t && Date.now() - a.t < 3000;
   if (esperando) {
     let e = {}; try { e = JSON.parse(esperando); } catch (x) {}
     D.registrar("BLOQUEO", "La aplicación se cerró o se recargó mientras esperaba al servidor (" + (e.ruta || "?") + "). Probablemente se quedó colgada.", { esperaba: e });
-  } else if (anterior && !cerro) {
-    let a = {}; try { a = JSON.parse(anterior); } catch (x) {}
+  } else if (anterior && !cerro && !reciente) {
     D.registrar("CIERRE_ANORMAL", "La vez anterior la aplicación no terminó normalmente (pudo quedarse congelada o el navegador la cerró).",
       { ultimoLatido: a.t ? new Date(a.t).toISOString() : "", pantallaAnterior: a.pantalla || "" });
   }
-  quitar(ESPERA); quitar(CIERRE); quitar(LATIDO);
-  addEventListener("pagehide", () => poner(CIERRE, "1"));
-  addEventListener("pageshow", () => quitar(CIERRE));
+  quitarP(ESPERA); quitarP(CIERRE); quitarP(LATIDO);
+  addEventListener("pagehide", () => ponerP(CIERRE, "1"));
+  addEventListener("pageshow", () => quitarP(CIERRE));
 
   // Congelamientos: tareas que ocuparon la pantalla 5 s o más (Chrome y Edge).
   try {
