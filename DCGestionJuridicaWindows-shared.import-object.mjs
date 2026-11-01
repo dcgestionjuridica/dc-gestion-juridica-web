@@ -688,6 +688,11 @@ const js_code = {
         })(),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.codificarComponente' : (texto) => encodeURIComponent(texto),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.configuracionPagina' : (clave) => (globalThis.DC_CONFIG && typeof globalThis.DC_CONFIG[clave] === 'string') ? globalThis.DC_CONFIG[clave] : null,
+    'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.aHoraColombiaJs' : (t) => t.replace(/"(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(\.\d+)?(?:\+00:00|\+00|Z)"/g, function (m, a, mo, d, h, mi, s, f) {
+            var x = new Date(Date.UTC(+a, +mo - 1, +d, +h, +mi, +s) - 18000000);
+            var p = function (n) { return (n < 10 ? '0' : '') + n; };
+            return '"' + x.getUTCFullYear() + '-' + p(x.getUTCMonth() + 1) + '-' + p(x.getUTCDate()) + 'T' + p(x.getUTCHours()) + ':' + p(x.getUTCMinutes()) + ':' + p(x.getUTCSeconds()) + (f || '') + '-05:00"';
+        }),
     'com.carvajalrivera.crgestionjuridicawindows.datos.remoto.fetchPost' : (url, encabezados, cuerpo) => fetch(url, { method: 'POST', headers: JSON.parse(encabezados), body: cuerpo })
             .then(r => r.text().then(t => r.status + "\n" + t))
             .catch(e => "0\n"),
