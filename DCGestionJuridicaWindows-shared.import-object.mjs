@@ -333,6 +333,7 @@ const js_code = {
     'org.w3c.dom.userAgent_$external_prop_getter' : (_this) => _this.userAgent,
     'org.w3c.dom.language_$external_prop_getter' : (_this) => _this.language,
     'org.w3c.dom.caches_$external_prop_getter' : (_this) => _this.caches,
+    'org.w3c.dom.setTimeout_$external_fun' : (_this, p0, p1, p2, isDefault0, isDefault1) => _this.setTimeout(p0, isDefault0 ? undefined : p1, ...p2, ),
     'org.w3c.dom.fetch_$external_fun' : (_this, p0, p1, isDefault0) => _this.fetch(p0, isDefault0 ? undefined : p1, ),
     'org.w3c.dom.replaceState_$external_fun' : (_this, p0, p1, p2, isDefault0) => _this.replaceState(p0, p1, isDefault0 ? undefined : p2, ),
     'org.w3c.dom.item_$external_fun' : (_this, p0) => _this.item(p0),
@@ -803,6 +804,30 @@ const js_code = {
             if (D) D.termina(metodo, url, t0, x.status);
             return x.status + "\n" + (x.responseText || '');
         })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.precargarPlantillaJs' : (nombre, url) => {
+            try {
+                const P = (window.__dcPlantillas = window.__dcPlantillas || {});
+                if (P[nombre]) return;
+                P[nombre] = 'cargando';
+                fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+                    .then(b => createImageBitmap(b, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }))
+                    .then(bmp => {
+                        const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+                        c.getContext('2d').drawImage(bmp, 0, 0); if (bmp.close) bmp.close();
+                        P[nombre] = c;
+                    })
+                    .catch(() => { delete P[nombre]; });
+            } catch (e) {}
+        },
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.plantillaListaJs' : (nombre) => (() => {
+            const P = window.__dcPlantillas || {};
+            const c = P[nombre];
+            if (!c || typeof c === 'string') return -1;
+            const L = (window.__dcLienzos = window.__dcLienzos || []);
+            L.push(c); delete P[nombre]; return L.length - 1;
+        })(),
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoAnchoJs' : (id) => window.__dcLienzos[id].width,
+    'com.carvajalrivera.crgestionjuridicawindows.plataforma.lienzoAltoJs' : (id) => window.__dcLienzos[id].height,
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.registrarFuenteJs' : (familia, url, peso) => {
             try {
                 fetch(url).then(r => r.arrayBuffer()).then(b => new FontFace(familia, b, { weight: peso }).load())

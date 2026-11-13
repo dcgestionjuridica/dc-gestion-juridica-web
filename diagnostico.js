@@ -80,6 +80,12 @@
   quitarP(ESPERA); quitarP(CIERRE); quitarP(LATIDO);
   addEventListener("pagehide", () => ponerP(CIERRE, "1"));
   addEventListener("pageshow", () => quitarP(CIERRE));
+  // V1.7.20 (13/11/2026): en celulares y tabletas, cuando la app queda atrás (otra app, pantalla apagada), el sistema
+  // puede cerrar la pestaña sin avisar («pagehide» no llega) y al volver Chrome la recarga. Eso no es una falla de la
+  // app, pero se anotaba «CIERRE_ANORMAL». Ahora, al quedar oculta, se marca como cierre normal; al volver, se quita.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") ponerP(CIERRE, "1"); else quitarP(CIERRE);
+  });
 
   // Congelamientos: tareas que ocuparon la pantalla 5 s o más (Chrome y Edge).
   try {
