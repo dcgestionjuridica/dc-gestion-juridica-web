@@ -1,12 +1,14 @@
 {
-  "name": "DC Gestión Jurídica",
-  "short_name": "DC Gestión",
+  "name": "Gestión Jurídica",
+  "short_name": "Gestión Jurídica",
+  "description": "DC Gestión Jurídica",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0B1F3A",
   "theme_color": "#0B1F3A",
   "icons": [
-    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "icono-192.png?v=1794950000", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icono-512.png?v=1794950000", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "apple-touch-icon.png?v=1794950000", "sizes": "180x180", "type": "image/png" }
   ]
 }
