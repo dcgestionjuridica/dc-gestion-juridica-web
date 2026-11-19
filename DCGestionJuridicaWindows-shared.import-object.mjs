@@ -913,7 +913,10 @@ const js_code = {
             catch (e) { return false; }
         })(),
     'com.carvajalrivera.crgestionjuridicawindows.plataforma.cerrarVentanaJs' : (v) => { try { v.close(); } catch (e) {} },
-    'com.carvajalrivera.crgestionjuridicawindows.tiempo.milisJs' : () => Date.now()
+    'com.carvajalrivera.crgestionjuridicawindows.tiempo.milisJs' : () => Date.now(),
+    'pantallaRecuperadaJs' : () => { try { return (globalThis.DC_DIAG && globalThis.DC_DIAG.pantallaRecuperada()) || ''; } catch (e) { return ''; } },
+    'pidePruebaCuadroJs' : () => { try { return !!(globalThis.DC_DIAG && globalThis.DC_DIAG.pidePruebaCuadro); } catch (e) { return false; } },
+    'cuadroDibujadoJs' : () => { try { if (globalThis.DC_DIAG) globalThis.DC_DIAG.cuadroDibujado(); } catch (e) {} }
 }
 
 const StringConstantsProxy = new Proxy({}, {

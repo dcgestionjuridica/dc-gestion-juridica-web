@@ -31,6 +31,14 @@
         enLinea: navigator.onLine,
         pedidosRecientes: pedidos.slice(-8)
       }, detalle || {});
+      // V1.7.38: el mismo error repetido sin parar (p. ej. en cada cuadro) ya no llena la cola: se cuenta en el
+      // primero. Antes la cola (30) se llenaba en 5 segundos y se perdía el primer error, que es el que dice la causa.
+      const ult = cola[cola.length - 1];
+      if (ult && ult.tipo === String(tipo).slice(0, 120) && ult.mensaje === String(mensaje || "").slice(0, 3900) && Date.now() - Date.parse(ult.fecha) < 120000) {
+        ult.detalle = Object.assign(ult.detalle || {}, { veces: ((ult.detalle && ult.detalle.veces) || 1) + 1 });
+        poner(COLA, JSON.stringify(cola));
+        return;
+      }
       cola.push({ fecha: new Date().toISOString(), tipo: String(tipo).slice(0, 120), mensaje: String(mensaje || "").slice(0, 3900), detalle: d });
       while (cola.length > MAX_COLA) cola.shift();
       poner(COLA, JSON.stringify(cola));
@@ -97,6 +105,65 @@
   } catch (e) {}
 
   // Errores que nadie atrapó.
-  addEventListener("error", (e) => D.registrar("ERROR_NAVEGADOR", (e.message || "Error").slice(0, 500), { archivo: e.filename ? ruta(e.filename) : "", linea: e.lineno, pila: (e.error && e.error.stack || "").slice(0, 6000) }));
-  addEventListener("unhandledrejection", (e) => { const r = e.reason || {}; D.registrar("ERROR_NAVEGADOR", String(r.message || r).slice(0, 500), { pila: String(r.stack || "").slice(0, 6000) }); });
+  addEventListener("error", (e) => { D.registrar("ERROR_NAVEGADOR", (e.message || "Error").slice(0, 500), { archivo: e.filename ? ruta(e.filename) : "", linea: e.lineno, pila: (e.error && e.error.stack || "").slice(0, 6000) }); vigilarPantalla(); });
+  addEventListener("unhandledrejection", (e) => { const r = e.reason || {}; D.registrar("ERROR_NAVEGADOR", String(r.message || r).slice(0, 500), { pila: String(r.stack || "").slice(0, 6000) }); vigilarPantalla(); });
+
+  // V1.7.38 (19/11/2026, pedido de Darío: «no quiero más cuelgues jamás»): RECUPERACIÓN SOLA.
+  // En el navegador, cuando la interfaz se rompe al dibujarse, la página queda quieta para siempre (no responde
+  // a clics ni avanza). Después de cada error que nadie atrapó se le pregunta a la aplicación si todavía dibuja
+  // (DC_DIAG.pidePruebaCuadro → la app contesta con cuadroDibujado). Si en 2,5 s no contesta, o el error se repite
+  // sin parar, la página se recarga sola y vuelve a la misma pantalla con la sesión abierta (la sesión vive en
+  // esta pestaña). Si la misma pantalla se vuelve a romper enseguida, vuelve a Inicio. Si se rompe 3 veces en
+  // 2 minutos, ya no recarga: muestra un aviso para recargar a mano (así nunca queda en un ciclo).
+  const RECUP = "dc-diag-recuperacion";
+  let vigilando = false, erroresSeguidos = 0;
+  D.pidePruebaCuadro = false;
+  D.cuadroDibujado = () => { D.pidePruebaCuadro = false; D._ultimoCuadro = Date.now(); };
+  D.pantallaRecuperada = () => {
+    let r = null; try { r = JSON.parse(leerP(RECUP) || "null"); } catch (x) {}
+    if (!r || !r.pendiente) return "";
+    r.pendiente = false; ponerP(RECUP, JSON.stringify(r));
+    return r.pantalla || "DASHBOARD";
+  };
+  function vigilarPantalla() {
+    erroresSeguidos++;
+    if (vigilando) return;
+    vigilando = true;
+    const desde = Date.now();
+    D.pidePruebaCuadro = true;
+    setTimeout(() => {
+      vigilando = false;
+      const respondio = (D._ultimoCuadro || 0) >= desde;
+      const repetido = erroresSeguidos >= 4;
+      erroresSeguidos = 0;
+      // Una pestaña oculta no dibuja: no es un cuelgue. Se revisa otra vez al volver.
+      if (document.visibilityState === "hidden") { D.pidePruebaCuadro = false; return; }
+      if (respondio && !repetido) return;
+      recuperar(repetido ? "el error se repetía sin parar" : "la pantalla dejó de responder");
+    }, 2500);
+  }
+  function recuperar(motivo) {
+    let r = {}; try { r = JSON.parse(leerP(RECUP) || "{}"); } catch (x) {}
+    const ahora = Date.now();
+    const veces = (r.veces || []).filter((t) => ahora - t < 120000);
+    veces.push(ahora);
+    const misma = r.pantalla === D.pantalla && r.en && ahora - r.en < 60000;
+    D.registrar("RECUPERACION", "La pantalla «" + D.pantalla + "» se rompió (" + motivo + ") y la aplicación se recargó sola.", { veces: veces.length });
+    if (veces.length >= 3) { mostrarAvisoRecargar(); ponerP(RECUP, JSON.stringify({ veces, en: ahora, pantalla: D.pantalla, pendiente: false })); return; }
+    ponerP(RECUP, JSON.stringify({ veces, en: ahora, pantalla: misma ? "DASHBOARD" : D.pantalla, pendiente: true }));
+    ponerP(CIERRE, "1");
+    location.reload();
+  }
+  function mostrarAvisoRecargar() {
+    if (document.getElementById("dc-aviso-recargar")) return;
+    const c = document.createElement("div");
+    c.id = "dc-aviso-recargar";
+    c.setAttribute("style", "position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(11,31,58,.55);font-family:system-ui,Segoe UI,Arial,sans-serif");
+    c.innerHTML = '<div style="background:#fff;border-radius:12px;padding:24px 28px;max-width:420px;box-shadow:0 12px 40px rgba(0,0,0,.25);text-align:center">' +
+      '<div style="font-size:18px;font-weight:700;color:#0B1F3A;margin-bottom:8px">La aplicación tuvo un problema</div>' +
+      '<div style="font-size:14px;color:#44546A;margin-bottom:18px">Ya quedó registrado para revisarlo. Pulse el botón para seguir trabajando.</div>' +
+      '<button style="background:#0B1F3A;color:#fff;border:0;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer">Volver a cargar</button></div>';
+    c.querySelector("button").onclick = () => { try { sessionStorage.removeItem(RECUP); } catch (x) {} location.reload(); };
+    document.body.appendChild(c);
+  }
 })();
