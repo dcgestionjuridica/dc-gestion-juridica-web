@@ -620,6 +620,9 @@ const js_code = {
     'com.carvajalrivera.crgestionjuridicawindows.errorJs_1' : () => globalThis.DC_OCR ? String(globalThis.DC_OCR.error || '') : 'Falta comprobante.js',
     'com.carvajalrivera.crgestionjuridicawindows.recibidaJs' : () => (() => { const o = globalThis.DC_OCR; if (!o || !o.recibida) return ''; const r = o.recibida; o.recibida = null; return JSON.stringify(r); })(),
     'com.carvajalrivera.crgestionjuridicawindows.escucharJs' : (activo) => { if (globalThis.DC_OCR) globalThis.DC_OCR.escuchar(activo); },
+    'com.carvajalrivera.crgestionjuridicawindows.vozCargadaJs' : () => !!(window.DC_VOZ && window.DC_VOZ.abrir),
+    'com.carvajalrivera.crgestionjuridicawindows.abrirVozJs' : (url, clave, token, version, oscuro) => { try { window.DC_VOZ.abrir({ url: url, clave: clave, token: token, version: version, oscuro: oscuro }); } catch (e) { console.error(e); } },
+    'com.carvajalrivera.crgestionjuridicawindows.alCambiarJs' : (cb) => { window.DC_VOZ_CAMBIO = () => cb(); },
     'com.carvajalrivera.crgestionjuridicawindows.hablarJs' : (texto, alTerminar) => (() => {
             if (!('speechSynthesis' in window)) return false;
             const s = window.speechSynthesis;
