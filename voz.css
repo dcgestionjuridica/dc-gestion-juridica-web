@@ -71,3 +71,10 @@
 .voz-sino-otra svg { width:16px; height:16px; }
 .voz-sino:has(.voz-sino-otra) { display:block; }
 @media (prefers-reduced-motion: reduce) { .voz-sino.oye .voz-sino-mic { animation:none; } }
+
+/* 22/11/2026: conversación con Doc Dai */
+.voz-burbuja { position:relative; background:var(--oro); color:var(--texto); border-radius:4px 16px 16px 16px; padding:12px 14px; font-size:15px; line-height:1.5; margin:0 0 12px; }
+.voz-puntos div { padding:7px 0; font-size:13.5px; color:var(--texto); border-bottom:1px dashed var(--linea); }
+.voz-puntos div:last-child { border-bottom:0; }
+.voz-hablar { display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.voz-hablar svg { width:18px; height:18px; }
