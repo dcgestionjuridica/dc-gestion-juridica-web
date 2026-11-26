@@ -3,8 +3,8 @@
 // Este archivo no cambia nada visible: usa la función oficial del navegador para contraseñas.
 //  1) Guardar: solo después de que el servidor aceptó el correo y la contraseña Y la app pasó del ingreso
 //     a otra pantalla (si el usuario no está activo, no se guarda nada).
-//  2) Sugerir: al tocar la casilla del correo vacía, Chrome muestra las cuentas guardadas; al elegir una,
-//     se escriben el correo y la contraseña en la pantalla y el usuario solo oprime «Ingresar».
+//  2) Sugerir: al tocar la casilla del correo o de la contraseña, Chrome muestra las cuentas guardadas; al
+//     elegir una, se escriben el correo y la contraseña en la pantalla y el usuario solo oprime «Ingresar».
 // Navegadores sin esta función (Safari, Firefox): no pasa nada, la pantalla sigue igual.
 (function () {
   if (!window.PasswordCredential || !navigator.credentials || !window.fetch) return;
@@ -51,31 +51,52 @@
     campo.value = texto;
     campo.dispatchEvent(new InputEvent("input", { inputType: "insertText", data: texto, bubbles: true }));
   };
-  var tecla = function (campo, nombre, codigo) {
-    campo.dispatchEvent(new KeyboardEvent("keydown", { key: nombre, code: nombre, keyCode: codigo, bubbles: true, cancelable: true }));
-    campo.dispatchEvent(new KeyboardEvent("keyup", { key: nombre, code: nombre, keyCode: codigo, bubbles: true }));
+  var tecla = function (campo, nombre, codigo, extra) {
+    var o = { key: nombre, code: nombre.length === 1 ? "Key" + nombre.toUpperCase() : nombre, keyCode: codigo, bubbles: true, cancelable: true };
+    for (var k in (extra || {})) o[k] = extra[k];
+    campo.dispatchEvent(new KeyboardEvent("keydown", o));
+    campo.dispatchEvent(new KeyboardEvent("keyup", o));
   };
-  var preguntado = false;
-  // La casilla que recibe lo que se escribe aparece un instante después del toque (no avisa al enfocarse).
-  var revisar = function () {
-    if (preguntado || !enIngreso()) return;
-    var campo = campoActivo();
-    if (!campo || campo.getAttribute("inputmode") !== "email" || campo.value) return;
-    preguntado = true; // una sola vez por visita, para no molestar
-    navigator.credentials.get({ password: true, mediation: "optional" }).then(function (c) {
-      if (!c || !c.password || !enIngreso()) return;
+  var modo = function (campo) { return campo ? campo.getAttribute("inputmode") : null; };
+  // Reemplaza lo que tenga la casilla (la app suele traer el correo ya escrito de la vez anterior).
+  var reemplazar = function (campo, texto) {
+    if (campo.value === texto) return;
+    var n = campo.value.length;
+    if (n) {
+      tecla(campo, "End", 35);
+      for (var i = 0; i < n; i++) tecla(campo, "Backspace", 8);
+    }
+    escribir(campo, texto);
+  };
+  var aplicar = function (c) {
+    var enCorreo = function () {
       var correo = campoActivo();
-      if (!correo || correo.getAttribute("inputmode") !== "email" || correo.value) return;
-      escribir(correo, c.id);
+      if (modo(correo) !== "email") return;
+      reemplazar(correo, c.id);
       setTimeout(function () {
         tecla(correo, "Tab", 9); // pasa a la casilla de la contraseña
         setTimeout(function () {
           var clave = campoActivo();
-          if (clave && clave.getAttribute("inputmode") === "password" && !clave.value) escribir(clave, c.password);
+          if (modo(clave) === "password") reemplazar(clave, c.password);
         }, 300);
       }, 200);
+    };
+    var campo = campoActivo();
+    if (modo(campo) === "password") { tecla(campo, "Tab", 9, { shiftKey: true }); setTimeout(enCorreo, 300); }
+    else enCorreo();
+  };
+  var preguntado = false;
+  // La casilla que recibe lo que se escribe aparece un instante después del toque (no avisa al enfocarse).
+  // Se ofrece al tocar el correo o la contraseña (vacía), una sola vez por visita para no molestar.
+  var revisar = function () {
+    if (preguntado || !enIngreso()) return;
+    var campo = campoActivo(), m = modo(campo);
+    if (m !== "email" && !(m === "password" && !campo.value)) return;
+    preguntado = true;
+    navigator.credentials.get({ password: true, mediation: "optional" }).then(function (c) {
+      if (c && c.password && enIngreso()) aplicar(c);
     }).catch(function () {});
   };
   document.addEventListener("pointerup", function () { if (!preguntado && enIngreso()) setTimeout(revisar, 250); }, true);
-  document.addEventListener("keyup", function (e) { if (e.key === "Tab" && !preguntado && enIngreso()) setTimeout(revisar, 250); }, true);
+  document.addEventListener("keyup", function (e) { if (e.key === "Tab" && e.isTrusted && !preguntado && enIngreso()) setTimeout(revisar, 250); }, true);
 })();
