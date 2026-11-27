@@ -276,6 +276,8 @@ const js_code = {
     'org.w3c.dom.search_$external_prop_getter' : (_this) => _this.search,
     'org.w3c.dom.tabIndex_$external_prop_setter' : (_this, v) => _this.tabIndex = v,
     'org.w3c.dom.innerText_$external_prop_setter' : (_this, v) => _this.innerText = v,
+    'org.w3c.dom.offsetWidth_$external_prop_getter' : (_this) => _this.offsetWidth,
+    'org.w3c.dom.offsetHeight_$external_prop_getter' : (_this) => _this.offsetHeight,
     'org.w3c.dom.click_$external_fun' : (_this, ) => _this.click(),
     'org.w3c.dom.focus_$external_fun' : (_this, ) => _this.focus(),
     'org.w3c.dom.blur_$external_fun' : (_this, ) => _this.blur(),
@@ -287,6 +289,7 @@ const js_code = {
     'org.w3c.dom.setData_$external_fun' : (_this, p0, p1) => _this.setData(p0, p1),
     'org.w3c.dom.documentElement_$external_prop_getter' : (_this) => _this.documentElement,
     'org.w3c.dom.body_$external_prop_getter' : (_this) => _this.body,
+    'org.w3c.dom.head_$external_prop_getter' : (_this) => _this.head,
     'org.w3c.dom.activeElement_$external_prop_getter' : (_this) => _this.activeElement,
     'org.w3c.dom.createElement_$external_fun' : (_this, p0, p1, isDefault0) => _this.createElement(p0, isDefault0 ? undefined : p1, ),
     'org.w3c.dom.hasFocus_$external_fun' : (_this, ) => _this.hasFocus(),
@@ -294,6 +297,7 @@ const js_code = {
     'org.w3c.dom.namespaceURI_$external_prop_getter' : (_this) => _this.namespaceURI,
     'org.w3c.dom.localName_$external_prop_getter' : (_this) => _this.localName,
     'org.w3c.dom.id_$external_prop_setter' : (_this, v) => _this.id = v,
+    'org.w3c.dom.className_$external_prop_setter' : (_this, v) => _this.className = v,
     'org.w3c.dom.classList_$external_prop_getter' : (_this) => _this.classList,
     'org.w3c.dom.shadowRoot_$external_prop_getter' : (_this) => _this.shadowRoot,
     'org.w3c.dom.clientWidth_$external_prop_getter' : (_this) => _this.clientWidth,
@@ -311,6 +315,7 @@ const js_code = {
     'org.w3c.dom.textContent_$external_prop_setter' : (_this, v) => _this.textContent = v,
     'org.w3c.dom.hasChildNodes_$external_fun' : (_this, ) => _this.hasChildNodes(),
     'org.w3c.dom.lookupPrefix_$external_fun' : (_this, p0) => _this.lookupPrefix(p0),
+    'org.w3c.dom.insertBefore_$external_fun' : (_this, p0, p1) => _this.insertBefore(p0, p1),
     'org.w3c.dom.appendChild_$external_fun' : (_this, p0) => _this.appendChild(p0),
     'org.w3c.dom.removeChild_$external_fun' : (_this, p0) => _this.removeChild(p0),
     'org.w3c.dom.width_$external_prop_getter' : (_this) => _this.width,
@@ -336,11 +341,21 @@ const js_code = {
     'org.w3c.dom.setTimeout_$external_fun' : (_this, p0, p1, p2, isDefault0, isDefault1) => _this.setTimeout(p0, isDefault0 ? undefined : p1, ...p2, ),
     'org.w3c.dom.fetch_$external_fun' : (_this, p0, p1, isDefault0) => _this.fetch(p0, isDefault0 ? undefined : p1, ),
     'org.w3c.dom.replaceState_$external_fun' : (_this, p0, p1, p2, isDefault0) => _this.replaceState(p0, p1, isDefault0 ? undefined : p2, ),
+    'org.w3c.dom.children_$external_prop_getter' : (_this) => _this.children,
     'org.w3c.dom.item_$external_fun' : (_this, p0) => _this.item(p0),
+    'org.w3c.dom.item_$external_fun_1' : (_this, p0) => _this.item(p0),
     'org.w3c.dom.top_$external_prop_getter' : (_this) => _this.top,
     'org.w3c.dom.left_$external_prop_getter' : (_this) => _this.left,
     'org.w3c.dom.remove_$external_fun' : (_this, ) => _this.remove(),
     'org.w3c.dom.Companion_$external_object_getInstance' : () => ({}),
+    'org.w3c.dom.name_$external_prop_setter' : (_this, v) => _this.name = v,
+    'org.w3c.dom.placeholder_$external_prop_setter' : (_this, v) => _this.placeholder = v,
+    'org.w3c.dom.type_$external_prop_getter' : (_this) => _this.type,
+    'org.w3c.dom.type_$external_prop_setter' : (_this, v) => _this.type = v,
+    'org.w3c.dom.value_$external_prop_getter' : (_this) => _this.value,
+    'org.w3c.dom.value_$external_prop_setter' : (_this, v) => _this.value = v,
+    'org.w3c.dom.HTMLInputElement_$external_class_instanceof' : (x) => x instanceof HTMLInputElement,
+    'org.w3c.dom.HTMLInputElement_$external_class_get' : () => HTMLInputElement,
     'org.w3c.dom.parsing.DOMParser_$external_fun' : () => new DOMParser(),
     'org.w3c.dom.parsing.parseFromString_$external_fun' : (_this, p0, p1) => _this.parseFromString(p0, p1),
     'org.w3c.dom.pointerevents.pointerId_$external_prop_getter' : (_this) => _this.pointerId,
@@ -519,6 +534,18 @@ const js_code = {
            element.style.top = "" + top + "px";
            element.style.width = "" + width + "px";
            element.style.height = "" + height + "px";
+         },
+    'androidx.compose.ui.viewinterop.toggleVisibility' : (element, isHidden) => { 
+           element.style.visibility = isHidden ? "hidden" : "visible";
+         },
+    'androidx.compose.ui.viewinterop.setSizeAndPosition' : (element, left, top, width, height) => { 
+           element.style.left = "" + left + "px";
+           element.style.top = "" + top + "px";
+           element.style.width = "" + width + "px";
+           element.style.height = "" + height + "px";
+         },
+    'androidx.compose.ui.viewinterop.setClipPath' : (element, top, right, bottom, left) => { 
+           element.style.setProperty("clip-path", "inset(" + top + "px " + right + "px " + bottom + "px " + left + "px)"); 
          },
     'androidx.compose.ui.window.documentIsVisible' : () => document.visibilityState === 'visible',
     'androidx.compose.ui.window.isTouchEvent' : (event) => event.pointerType === 'touch',
